@@ -773,6 +773,14 @@ void AdcEverySecond(void) {
         AddSampleMq(channel);
         AdcGetMq(channel);
         break;
+      case GPIO_ADC_TEMP:
+        // Refresh the global temperature every second from the board NTC. Without this the value is
+        // only updated when sensor JSON is generated (TelePeriod, default 300s), so a device using
+        // the global temperature for overtemp cut-off (Energy->use_overtemp) could act on a reading
+        // minutes old. Needs a GPIO_ADC_TEMP and its AdcParam configured.
+        TasmotaGlobal.temperature_celsius = AdcGetTemperature(channel);
+        TasmotaGlobal.global_update = TasmotaGlobal.uptime;
+        break;
     }
   }
 }

@@ -1553,6 +1553,9 @@ bool Xdrv03(uint32_t function)
         Energy->power_steady_counter = 2;
         break;
 #endif  // USE_ENERGY_MARGIN_DETECTION
+      case FUNC_SET_DEVICE_POWER:
+        result = XnrgCall(FUNC_SET_DEVICE_POWER);
+        break;
       case FUNC_COMMAND:
         result = DecodeCommand(kEnergyCommands, EnergyCommand);
         break;

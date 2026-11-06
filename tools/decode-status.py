@@ -314,7 +314,7 @@ a_features = [[
     "USE_C8_CO2_5K","USE_WIZMOTE","USE_V9240","USE_TELNET",
     "USE_XYZMODEM","USE_WIREGUARD","USE_AP33772S","USE_VID6608",
     "USE_AGS02MA","USE_SEN6X","USE_FM24CXX","USE_STCC4",
-    "","","","",
+    "USE_SY7T50X","","","",
     "","","",""
     ]]
 

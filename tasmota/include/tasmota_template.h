@@ -244,6 +244,8 @@ enum UserSelectablePins {
   GPIO_MIEL_HVAC_MB_TX, GPIO_MIEL_HVAC_MB_RX, GPIO_MIEL_HVAC_MB_TXEN,  // Mitsubishi Electric HVAC Modbus RTU slave
 #endif
   GPIO_CC1101_CS,                       // CC1101 SPI chip select
+  GPIO_SY7T50X_TX, GPIO_SY7T50X_RX,     // Silergy SY7T501/SY7T502 serial interface
+  GPIO_SY7T50X_LED,                     // Silergy SY7T501/SY7T502 board status LED (WS2812)
   GPIO_SENSOR_END };
 
 // Error as warning to rethink GPIO usage with max 2045
@@ -529,6 +531,7 @@ const char kSensorNames[] PROGMEM =
   D_SENSOR_MIEL_HVAC_MB_TX "|" D_SENSOR_MIEL_HVAC_MB_RX "|" D_SENSOR_MIEL_HVAC_MB_TXEN "|"
 #endif
   D_SENSOR_CC1101_CS "|"
+  D_SENSOR_SY7T50X_TX "|" D_SENSOR_SY7T50X_RX "|" D_SENSOR_SY7T50X_LED "|"
 ;
 
 const char kSensorNamesFixed[] PROGMEM =
@@ -1028,6 +1031,11 @@ const uint16_t kGpioNiceList[] PROGMEM = {
 #ifdef USE_BL6523
   AGPIO(GPIO_BL6523_TX),                         // BL6523 based Watt meter Serial interface
   AGPIO(GPIO_BL6523_RX),                         // BL6523 based Watt meter Serial interface
+#endif
+#ifdef USE_SY7T50X
+  AGPIO(GPIO_SY7T50X_TX),                        // Serial SY7T501/SY7T502 interface
+  AGPIO(GPIO_SY7T50X_RX),                        // Serial SY7T501/SY7T502 interface
+  AGPIO(GPIO_SY7T50X_LED),                       // SY7T501/SY7T502 board status LED (WS2812)
 #endif
 #ifdef USE_V9240
   AGPIO(GPIO_V9240_TX),                          //  Serial V9240 interface

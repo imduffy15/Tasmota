@@ -1041,6 +1041,7 @@
 //  #define IEM3000_IEM3155                        // Compatibility fix for Iem3155 (changes Power and Energy total readout)
 //#define USE_WE517                                // Add support for Orno WE517-Modbus energy monitor (+1k code)
 //#define USE_MODBUS_ENERGY                        // Add support for generic modbus energy monitor using a user file in rule space (+5k)
+//#define USE_SY7T50X                            // Add support for Silergy SY7T501/SY7T502 energy monitor with relay control as used in Ogemray 25A (+4k code)
 //#define USE_V9240                              // Add support for Vango Technologies V924x ultralow power, single-phase, power measurement (+12k)
 //#define USE_MAKE_SKY_BLUE                        // Add support for MakeSkyBlue - Solar Charge Controller interface
   #define MAKE_SKY_BLUE_OPTION 0x7                 // MakeSkyBlue option: 0=minimal, 0x1=with serial debug, 0x2=with EnergyConfig On/Off, 0x4=with EnergyConfig register R/W

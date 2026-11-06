@@ -973,7 +973,9 @@ constexpr uint32_t feature[] = {
 #if defined(USE_I2C) && defined(USE_STCC4)
   0x00800000 |  // xsns_120_stcc4.ino
 #endif
-//  0x01000000 |  // 
+#if defined(USE_ENERGY_SENSOR) && defined(USE_SY7T50X)
+  0x01000000 |  // xnrg_27_sy7t50x.ino
+#endif
 //  0x02000000 |  // 
 //  0x04000000 |  // 
 //  0x08000000 |  // 

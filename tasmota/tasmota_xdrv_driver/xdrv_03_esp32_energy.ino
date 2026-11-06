@@ -1962,6 +1962,9 @@ bool Xdrv03(uint32_t function)
       case FUNC_SET_POWER:
         Energy->power_steady_counter = 2;
         break;
+      case FUNC_SET_DEVICE_POWER:
+        result = XnrgCall(FUNC_SET_DEVICE_POWER);
+        break;
       case FUNC_COMMAND:
         result = DecodeCommand(kEnergyCommands, EnergyCommand);
         break;

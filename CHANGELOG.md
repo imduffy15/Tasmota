@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - ESP32 `PsrMode` displaying whether PSRAM is `QIO`/`OPI` (#25213)
 - BME680 IAQ (air quality index) to BMP sensor driver (#25175)
+- Support for Silergy SY7T501/SY7T502 energy monitor with relay control as used in Ogemray 25A
 
 ### Breaking Changed
 - Reduce max number of ZCDimmer PWM channels to 5 due to allocated persistent data size (#25222)
