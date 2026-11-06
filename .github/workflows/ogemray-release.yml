@@ -1,0 +1,135 @@
+name: Ogemray 25A firmware
+
+# Fork-only: builds the tasmota32c3ser-ogemray variant (xnrg_27_sy7t50x driver
+# enabled) and publishes it as a GitHub release on this fork.
+#   - push to the feature branch or manual run -> rolling "ogemray-dev" prerelease
+#   - push a tag "ogemray-v*"                   -> permanent versioned release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ogemray-ci
+    tags:
+      - 'ogemray-v*'
+
+concurrency:
+  group: ogemray-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Never run on the upstream repo or on unrelated forks.
+    if: github.repository == 'imduffy15/Tasmota'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+          enable-cache: false
+
+      - name: Install PlatformIO (pioarduino)
+        run: uv pip install --system pioarduino==6.2.0.post1
+
+      - name: Configure Ogemray build
+        # These two files are git-ignored, so recreate them here. Keep in step
+        # with build-config/ in the companion repo.
+        run: |
+          cat > platformio_override.ini <<'EOF'
+          ; Ogemray SW40 PbS: ESP32-C3 with its console on UART0 (GPIO20/21), no USB wired,
+          ; so use the serial board definition rather than the USB-CDC one of tasmota32c3
+          [env:tasmota32c3ser-ogemray]
+          extends                 = env:tasmota32c3
+          board                   = esp32c3ser
+          EOF
+          cat > tasmota/user_config_override.h <<'EOF'
+          #ifndef _USER_CONFIG_OVERRIDE_H_
+          #define _USER_CONFIG_OVERRIDE_H_
+          #ifndef USE_SY7T50X
+          #define USE_SY7T50X                              // Silergy SY7T501/SY7T502 energy monitor with relay control
+          #endif
+          #endif  // _USER_CONFIG_OVERRIDE_H_
+          EOF
+
+      - name: Add commit SHA to firmware footer
+        run: |
+          SHA=$(git rev-parse --short=7 HEAD)
+          sed -i -e "s/TASMOTA_SHA_SHORT/TASMOTA_SHA_SHORT $SHA-/g" ./tasmota/include/tasmota_version.h
+
+      - name: Build firmware
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: '1'
+        run: platformio run -e tasmota32c3ser-ogemray
+
+      - name: Collect firmware
+        run: |
+          mkdir -p dist
+          cp build_output/firmware/tasmota32c3ser-ogemray.bin         dist/
+          cp build_output/firmware/tasmota32c3ser-ogemray.factory.bin dist/
+          ls -l dist
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: tasmota32c3ser-ogemray
+          path: dist/*
+
+      - name: Write release notes
+        run: |
+          cat > notes.md <<'EOF'
+          Unofficial Tasmota build for the **Ogemray SW40 PbS 25A** (ESP-Shelly-C38F, ESP32-C3),
+          with the `xnrg_27_sy7t50x` Silergy SY7T501/SY7T502 energy + relay driver enabled.
+
+          > **Experimental — not verified on real hardware.** The relay switches a 25 A mains load.
+          > Bring it up with no load connected and follow the README before trusting it.
+
+          ### Files
+          - `tasmota32c3ser-ogemray.factory.bin` — full image. Flash at `0x0` over **serial** for a first install.
+          - `tasmota32c3ser-ogemray.bin` — app-only image, for Tasmota's own OTA once it is already running Tasmota.
+
+          ### Install (serial only — there is no OTA path from stock)
+          1. Disconnect mains. Power the board from 3.3 V on the 6-pin service header, enter download mode.
+          2. **Back up stock first** — the `shelly` partition holds the only copy of the device identity:
+             `esptool --chip esp32c3 read_flash 0 0x800000 ogemray-full-backup.bin`
+          3. `esptool --chip esp32c3 write_flash 0x0 tasmota32c3ser-ogemray.factory.bin`
+
+          To roll back to stock: `esptool --chip esp32c3 write_flash 0x0 ogemray-full-backup.bin`
+
+          Template:
+          `{"NAME":"Ogemray 25A","GPIO":[0,4736,0,0,32,12608,160,3872,0,0,12576,0,0,0,0,0,0,0,0,0,0,0],"FLAG":0,"BASE":1}`
+
+          Full bring-up, calibration and rollback steps are in the project README.
+          EOF
+
+      - name: Publish versioned release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "Ogemray 25A ($GITHUB_REF_NAME)" \
+            --notes-file notes.md
+
+      - name: Publish rolling dev release
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete ogemray-dev --cleanup-tag --yes || true
+          gh release create ogemray-dev dist/* \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "Ogemray 25A (dev build)" \
+            --notes-file notes.md
